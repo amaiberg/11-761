@@ -9,7 +9,7 @@ object Run {
     val trainDocs = getTrainDocs
     lazy val corpus = getCorpus
     //val model = trainModel(trainDocs, corpus)
-    val model = NGramModel(corpus, trainDocs)
+    val model = dummyModel
     val (hard, soft) = evaluate(classify(model, devDocs), devDocs)
     /*for my use*/
     printf("hard measure: %1.2f%%  correct\n", hard * 100)
@@ -45,17 +45,17 @@ object Run {
     case (d1, d2) => d1.real == d2.real
   }).map(_._1)
 
-  object dummyModel extends Model {
+  object dummyModel extends Model(null,null) {
     def apply(doc: Document) = math.random
   }
 
   object NGramModel {
-    def apply(corpus: List[String], trainSet: List[Document]) = new NGramModel(corpus, trainSet)
+    def apply(corpus: Iterator[String], trainSet: List[Document]) = new NGramModel(corpus, trainSet)
   }
 
-  class NGramModel(corpus: List[String], trainSet: List[Document]) extends Model {
+  class NGramModel(corpus: Iterator[String], trainSet: List[Document]) extends Model(corpus, trainSet) {
 
-    val trigramModel = genNGrams(corpus, 3)
+    val trigramModel = genNGrams(corpus.toList, 3)
 
     //need to train t
     val t = 2 // what should this value be??
@@ -78,8 +78,8 @@ object Run {
     println("separation quality")
     println("#real (above median): " + sortedKl.take(sortedKl.length / 2).count(_._3))
     println("#real (below median): " + sortedKl.drop(sortedKl.length / 2).count(_._3))
-
-    def apply(doc: Document) = {
+    
+    override def apply(doc: Document) :Double = {
       val dist = -kl(trigramModel, doc.sents.filterNot(_.isEmpty))
       //logistic regression
       if (dist > t) 1 else 0
@@ -92,11 +92,15 @@ object Run {
   def entropy(probs: Array[Double]) = probs.reduce((x, y) => x + y * lg(1d / y))
   def lg(x: Double) = math.log(x) / math.log(2d)
 
-  trait TestModel {
-    
-    def run(doc:Document ) : Double  
-    
+  abstract class Model {
+    def this(corpus: Iterator[String],trainingSet: List[Document]) = this
+    def apply(doc:Document) : Double
   }
-  type Model = Document => Double
+  
+  
+  
+  
+  
   type Metric = (Double, Double)
+
 }

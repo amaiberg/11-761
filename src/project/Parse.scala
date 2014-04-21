@@ -7,7 +7,7 @@ object Parse {
   //currently relative to workspace, but needs to be cmd-line deployable...
   val path = ""
 
-  val n = 500000
+  val n = 10000
   lazy val corpus = fromFile(path + "LM-train-100MW.txt").getLines.take(n).toList
 
   def getDocs(trainPath:String) = {
