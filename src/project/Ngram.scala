@@ -3,7 +3,6 @@ package project
 import scala.collection.SortedMap
 import Run._
 object Ngram {
-
   def genNGrams(corpus: List[String], n: Int = 3, size: Int = 100000000)  = {
     val ngrams = corpus.flatMap(sent => sent.split(" ").sliding(n)).map(_.toList)
     //maybe use ephemeral stream...
