@@ -1,5 +1,8 @@
 package grammar;
 
+import project.Parse.Document;
+import project.Run.*;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -12,10 +15,9 @@ import java.util.Arrays;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.trees.Tree;
 import grammar.inputParse;
-
-
-
-public class grammarScore {
+import java.util.List;
+  
+public class grammarScore extends Model {
   public static void main(String[] args) throws IOException, ClassNotFoundException{
      String fdata = "parseScoreSet.txt";
      String finput = "trainingSet.dat";
@@ -78,6 +80,29 @@ public class grammarScore {
     Tree parse = lp.parse(sent);
     double score = parse.score();
     return score;
+  }
+
+  @Override
+  public double apply(Document doc) {
+	List<List<String>> sentences = doc.getSentences();
+	int sentLength, totalLength =0;
+	double score=0;
+	List<String> sent;
+	LexicalizedParser lp = LexicalizedParser.loadModel(
+            "englishPCFG.ser.gz");
+	StringBuffer sentStr = new StringBuffer();
+	// TODO Auto-generated method stub
+	for (int i = 0; i<sentences.size(); i++) {
+		sent = sentences.get(i);
+		sentLength = sent.size();
+		for (int j = 0; j<sent.size(); j++) {
+			sentStr.append(sent.get(j));
+			sentStr.append(" ");
+		}
+		score += sentLength*grammarScore.getParseScore(sent.toString(), lp);
+		totalLength += sentLength;
+	}
+	return score/totalLength;
   }
   
 }
