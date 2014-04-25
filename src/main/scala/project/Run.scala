@@ -14,9 +14,9 @@ object Run {
     val trigrams = NGramModel(trainDocs, 3)
     val fourgrams = NGramModel(trainDocs, 4)
     val fivegrams = NGramModel(trainDocs, 5)
-    val realModel = InterpolatedModel(trainDocs, bigrams, trigrams, fourgrams, fivegrams)(true)
-    val fakeModel = InterpolatedModel(trainDocs, bigrams, trigrams, fourgrams, fivegrams)(false)
-    val model = KLModel(trainDocs, realModel, fakeModel)
+   // val realModel = InterpolatedModel(trainDocs, bigrams, trigrams, fourgrams, fivegrams)(true)
+   // val fakeModel = InterpolatedModel(trainDocs, bigrams, trigrams, fourgrams, fivegrams)(false)
+    val model = KLModel(trainDocs, trigrams, fourgrams)
     val (hard, soft) = evaluate(classify(model, devDocs), devDocs)
     /*for my use*/
     printf("hard measure: %1.2f%%  correct\n", hard * 100)

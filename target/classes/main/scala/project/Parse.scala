@@ -4,6 +4,8 @@ import scala.io.Source._
 import java.io.File
 import chalk.text.transform.StopWordFilter
 
+import scala.collection.JavaConversions._
+
 object Parse {
   //currently relative to workspace, but needs to be cmd-line deployable...
   val path = "/home/mog/dev/11-761/project/workspace/project/"
@@ -24,7 +26,12 @@ object Parse {
 
   def getCorpus = corpus
 
-  case class Document(id: Int, sents: List[List[String]], real: Boolean, softLabel: Double = 0d)
+  case class Document(id: Int, sents: List[List[String]], real: Boolean, softLabel: Double = 0d){
+   
+    val jSents : java.util.List[java.util.List[String]] = sents.map(l=>asJavaList(l))
+    def getSentences() = jSents
+    
+  }
   //case class Sentence(words: Array[String])
 
   def label(trainSet: List[String], labels: List[String]): List[Document] = {
