@@ -11,6 +11,7 @@ import java.io.File
 import EM._
 import breeze.linalg.DenseMatrix
 import breeze.linalg.DenseVector
+import chalk.text.transform.StopWordFilter
 object BerkeleyLM {
 
   def genGram(n: Int) = new BerkeleyNGram(n)
@@ -20,7 +21,7 @@ object BerkeleyLM {
 }
 
 sealed class BerkeleyNGram(n: Int) extends EventModel[java.util.List[String]] {
- val path = "/home/mog/dev/11-761/project/workspace/project/"
+  val path = ""
 
   val ngramLm = n match {
     case 2 | 3 => LmReaders.readLmBinary(path + "LM-kn" + n + "-train-100MW.binlm").asInstanceOf[ArrayEncodedProbBackoffLm[String]];
@@ -42,8 +43,8 @@ class NGramModel(trainSet: List[Document], n: Int) extends Model(trainSet) {
   println("training...")
   ///  ngramLM.scoreSentence(arg0);
   override def apply(doc: Document): Double = {
-    //  val filteredSents = doc.sents.map(s => sFilter(s).toList)
-    val ngrams = doc.sents.filter(s => !s.isEmpty).flatMap(sent => sent.sliding(n)).map(_.toList)
+    val filteredSents = doc.sents.map(s => sFilter(s).toList)
+    val ngrams = filteredSents.filter(s => !s.isEmpty).flatMap(sent => sent.sliding(n)).map(_.toList)
     val prob = ngrams.map(ngram => ngramModel(asJavaList(ngram))).sum / ngrams.length.toDouble
     //logistic regression
     //dist
@@ -65,7 +66,7 @@ object NGramModel {
 }
 
 class InterpolatedModel(trainSet: List[Document], models: Model*)(implicit real: Boolean = true) extends Model {
-  // val sFilter = StopWordFilter("en")
+  val sFilter = StopWordFilter("en")
 
   val docs = trainSet.filter(_.real == real)
 
@@ -96,23 +97,25 @@ class KLModel(trainSet: List[Document], models: Model*) extends Model {
   // val sFilter = StopWordFilter("en")
 
   val klScores = trainSet.map { doc => (doc.id, apply(doc), doc.real) }
-  
-  val trifourgramScores = trainSet.map { doc => (doc.id, (models(0)(doc),models(1)(doc)) , doc.real) }
-  
-  val realKlScores = trifourgramScores.filter{_._3}
-  val fakeKlScores = trifourgramScores.filter{!_._3}
-  println("real:")  
-  realKlScores.foreach{ case (id,(triscore,fourscore),_)=>
-    
-    println(triscore +  "\t" + fourscore )
+
+  val trifourgramScores = trainSet.map { doc => (doc.id, (models(0)(doc), models(1).apply(doc)), doc.real) }
+
+  val realKlScores = trifourgramScores.filter { _._3 }
+  val fakeKlScores = trifourgramScores.filter { _._3 }
+  println("real:")
+  realKlScores.foreach {
+    case (id, (triscore, fourscore), _) =>
+
+      println(triscore + "\t" + fourscore)
   }
-  
+
   println("fake:")
-  fakeKlScores.foreach{ case (id,(triscore,fourscore),_)=>
-    
-    println(triscore  + "\t" + fourscore )
+  fakeKlScores.foreach {
+    case (id, (triscore, fourscore), _) =>
+
+      println(triscore + "\t" + fourscore)
   }
- 
+
   /*val sortedKl = klScores.sortBy(_._2)
   
   sortedKl.foreach { doc =>
@@ -124,12 +127,12 @@ class KLModel(trainSet: List[Document], models: Model*) extends Model {
   println("#real (below median): " + sortedKl.drop(sortedKl.length / 2).count(_._3))
 */
   def apply(doc: Document): Double = {
-    models.map(model => model(doc)).reduce((x, y) => {if(y > x) 1d else 0d  })
+    models.map(model => model(doc)).reduce((x, y) => { if (y > x) 1d else 0d })
   }
 
   override def KL(doc: Document): Double = ???
   def sigmoid(t: Double) = 1d / (1d + math.exp(-t))
-} 
+}
 
 object KLModel {
   def apply(trainSet: List[Document], models: Model*) = new KLModel(trainSet: List[Document], models: _*)

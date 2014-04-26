@@ -18,7 +18,7 @@ import breeze.util.Implicits._
 object TopicModel {
   val sFilter = StopWordFilter()
   def main(args: Array[String]) = {
-    val trainDocs = getTrainDocs.filter(_.real)
+    val trainDocs = getTrainDocs(true).filter(_.real)
     val fmap = Index[String]()
     // Read in the training data and index it.
     val params = Params(new File(""), numTopics = 20,
