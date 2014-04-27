@@ -1,9 +1,8 @@
 package project
 
 import edu.berkeley.nlp.lm.io.LmReaders
-import project.Run.Model
+import Model._
 import Parse._
-import Run._
 import scala.collection.JavaConversions._
 import edu.berkeley.nlp.lm.ArrayEncodedProbBackoffLm
 import BerkeleyLM._
@@ -22,10 +21,10 @@ object BerkeleyLM {
 
 sealed class BerkeleyNGram(n: Int) extends EventModel[java.util.List[String]] {
   val path = ""
-
+ 
   val ngramLm = n match {
-    case 2 | 3 => LmReaders.readLmBinary(path + "LM-kn" + n + "-train-100MW.binlm").asInstanceOf[ArrayEncodedProbBackoffLm[String]];
-    case 4 => LmReaders.readLmBinary(path + "LM-kn" + n + "-train-50MW.binlm").asInstanceOf[ArrayEncodedProbBackoffLm[String]];
+    case 2  => LmReaders.readLmBinary(path + "LM-kn" + n + "-train-100MW.binlm").asInstanceOf[ArrayEncodedProbBackoffLm[String]];
+    case 4 |3  => LmReaders.readLmBinary(path + "LM-kn" + n + "-train-50MW.binlm").asInstanceOf[ArrayEncodedProbBackoffLm[String]];
     case 5 => LmReaders.readLmBinary(path + "LM-kn" + n + "-train-20MW.binlm").asInstanceOf[ArrayEncodedProbBackoffLm[String]]
   }
   def apply(ngram: java.util.List[String]): Double = {
@@ -40,11 +39,11 @@ class NGramModel(trainSet: List[Document], n: Int) extends Model(trainSet) {
   //need to train t
   val t = 2 // what should this value be??
 
-  println("training...")
+  //println("training...")
   ///  ngramLM.scoreSentence(arg0);
   override def apply(doc: Document): Double = {
-    val filteredSents = doc.sents.map(s => sFilter(s).toList)
-    val ngrams = filteredSents.filter(s => !s.isEmpty).flatMap(sent => sent.sliding(n)).map(_.toList)
+    // val filteredSents = doc.sents.map(s => sFilter(s).toList)
+    val ngrams = doc.sents.filter(s => !s.isEmpty).flatMap(sent => sent.sliding(n)).map(_.toList)
     val prob = ngrams.map(ngram => ngramModel(asJavaList(ngram))).sum / ngrams.length.toDouble
     //logistic regression
     //dist

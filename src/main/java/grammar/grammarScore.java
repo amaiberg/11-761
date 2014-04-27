@@ -1,7 +1,8 @@
 package grammar;
 
 import project.Parse.Document;
-import project.Run.*;
+import project.Model.*;
+import project.Model;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +19,7 @@ import grammar.inputParse;
 import java.util.List;
 
 public class grammarScore extends Model {
-	public static void main(String[] args) throws IOException,
+/*	public static void main(String[] args) throws IOException,
 			ClassNotFoundException {
 		String fdata = "parseScoreSet.txt";
 		String finput = "trainingSet.dat";
@@ -30,7 +31,7 @@ public class grammarScore extends Model {
 		System.out.println(pss.size());
 
 	}
-
+*/
 	public double KL(Document doc) {
 		return 0d;
 	}

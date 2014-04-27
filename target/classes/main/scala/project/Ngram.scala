@@ -1,7 +1,6 @@
 package project
 
 import scala.collection.SortedMap
-import Run._
 import project.Parse.Document
 import Ngram._
 import chalk.text.transform.StopWordFilter
